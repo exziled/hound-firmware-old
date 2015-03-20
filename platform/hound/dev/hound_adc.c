@@ -46,6 +46,7 @@
 #include "dev/gpio.h"
 #include "dev/adc.h"
 #include "dev/udma.h"
+#include "dev/gptimer.h"
 
 // Platform
 #include "dev/hound_adc.h"
@@ -147,7 +148,36 @@ void init_hound_adc(void)
 										| udma_xfer_size(200)));		// Do 200 transfers (hopefully)
 	udma_set_channel_src(16, SOC_ADC_ADCL_ADC);
 	udma_set_channel_dst(16, hound_raw_data.current_socket_2 + hound_raw_data.data_size);
+
+
+	// Configure Timer
+	REG(GPT_0_BASE + GPTIMER_CTL) 	&= 	~(GPTIMER_CTL_TBEN);		// Disable GPT0-TimerB
+	REG(GPT_0_BASE + GPTIMER_CFG) 	= 	0x0;
+	REG(GPT_0_BASE + GPTIMER_TBMR) 	|= 	(GPTIMER_TBMR_TBMR_PERIODIC		// Periodic with Interrupt?
+										| GPTIMER_TBMR_TBMIE);
+	REG(GPT_0_BASE + GPTIMER_TBILR) = 	0xFFF;						// Load Initial Value
+	REG(GPT_0_BASE + GPTIMER_IMR) 	|= 	GPTIMER_IMR_TBMIM;			// Enable "match" interrupt
+	REG(GPT_0_BASE + GPTIMER_CTL)	|= 	GPTIMER_CTL_TBEN;			// Enable Timer
+
+	GPIO_SET_OUTPUT(GPIO_C_BASE, 1);
+
 }
+
+
+void timer_interrupt_test(void)
+{
+	static int value = 0;
+
+	if (value)
+	{
+		GPIO_SET_PIN(GPIO_C_BASE, 1);
+	} else {
+		GPIO_CLR_PIN(GPIO_C_BASE, 1);
+	}
+
+	value = !value;
+}
+
 
 static int adc_dma_configure(void)
 {
