@@ -82,12 +82,14 @@
 #define SOC_ADC_ADCCON2_SCH_TMP		(0xE << 0)
 #define SOC_ADC_ADCCON2_SCH_VDD3	(0xF << 0)
 
-extern struct hound_raw_data {
+typedef struct hound_raw_data {
 	uint8_t data_size;
 	uint16_t * current_socket_1;
 	uint16_t * current_socket_2;
 	uint16_t * voltage;
-};
+} HOUND_DATA;
+
+extern HOUND_DATA hound_data;
 
 /* Internal CC2538 Sensors */
 
@@ -108,6 +110,8 @@ extern struct hound_raw_data {
  									((SENSOR) == SENSOR_ISOCKB) || \
  									((SENSOR) == SENSOR_VOLT))
 
+int init_hound_data(uint8_t data_size);
+void init_hound_adc(void);
 
 #endif // __HOUND_ADC_H
 

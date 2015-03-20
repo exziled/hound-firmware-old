@@ -45,12 +45,15 @@
 #include "dev/ioc.h"
 #include "dev/gpio.h"
 #include "dev/adc.h"
+#include "dev/udma.h"
 
 // Platform
 #include "dev/hound_adc.h"
 
+
 // Standard Libraries
 #include <stdint.h>
+#include <malloc.h>
 
 
 // #define ADC_ALS_PWR_PORT_BASE    GPIO_PORT_TO_BASE(ADC_ALS_PWR_PORT)
@@ -71,6 +74,7 @@
  *
  */
 
+HOUND_DATA hound_raw_data;
 
 int init_hound_data(uint8_t data_size)
 {
@@ -119,65 +123,33 @@ void init_hound_adc(void)
 										| UDMA_CHCTL_ARBSIZE_1
 										| UDMA_CHCTL_XFERMODE_BASIC		// Do 1 transfer without interrupt
 										| udma_xfer_size(200)));		// Do 200 transfers (hopefully)
-	udma_set_channel_src(14, );
-	udma_set_channel_dst(14, );
+	udma_set_channel_src(14, SOC_ADC_ADCL_ADC);
+	udma_set_channel_dst(14, hound_raw_data.voltage + hound_raw_data.data_size);
+
+	udma_channel_mask_clr(15);		// Enable peripeheral interrupts
+	udma_set_channel_control_word(15, 	(UDMA_CHCTL_DSTINC_16 			// 12 Bit DAC (so 16 bit data size) and increment on the destination
+										| UDMA_CHCTL_SRCINC_NONE 
+										| UDMA_CHCTL_SRCSIZE_16 
+										| UDMA_CHCTL_DSTSIZE_16
+										| UDMA_CHCTL_ARBSIZE_1
+										| UDMA_CHCTL_XFERMODE_BASIC		// Do 1 transfer without interrupt
+										| udma_xfer_size(200)));		// Do 200 transfers (hopefully)
+	udma_set_channel_src(15, SOC_ADC_ADCL_ADC);
+	udma_set_channel_dst(15, hound_raw_data.current_socket_1 + hound_raw_data.data_size);
+
+	udma_channel_mask_clr(16);		// Enable peripeheral interrupts
+	udma_set_channel_control_word(16, 	(UDMA_CHCTL_DSTINC_16 			// 12 Bit DAC (so 16 bit data size) and increment on the destination
+										| UDMA_CHCTL_SRCINC_NONE 
+										| UDMA_CHCTL_SRCSIZE_16 
+										| UDMA_CHCTL_DSTSIZE_16
+										| UDMA_CHCTL_ARBSIZE_1
+										| UDMA_CHCTL_XFERMODE_BASIC		// Do 1 transfer without interrupt
+										| udma_xfer_size(200)));		// Do 200 transfers (hopefully)
+	udma_set_channel_src(16, SOC_ADC_ADCL_ADC);
+	udma_set_channel_dst(16, hound_raw_data.current_socket_2 + hound_raw_data.data_size);
 }
 
 static int adc_dma_configure(void)
 {
 
 }
-
-
-static int value(int type)
-{
-	uint16_t ret;
-
-	if (!IS_HOUND_SENSOR(type))
-	{
-		return -1;
-	}
-
-	ret = adc_get(type, HOUND_ADC_REF, SOC_ADC_ADCCON_DIV_64);
-}
-
-
-
-static int configure (int type, int value)
-{
-	if (!IS_HOUND_SENSOR(type))
-	{
-		return -1;
-	}
-}
-
-/*---------------------------------------------------------------------------*/
-static int
-configure(int type, int value)
-{
-  switch(type) {
-  case SENSORS_HW_INIT:
-    GPIO_SOFTWARE_CONTROL(ADC_ALS_PWR_PORT_BASE, ADC_ALS_PWR_PIN_MASK);
-    GPIO_SET_OUTPUT(ADC_ALS_PWR_PORT_BASE, ADC_ALS_PWR_PIN_MASK);
-    GPIO_CLR_PIN(ADC_ALS_PWR_PORT_BASE, ADC_ALS_PWR_PIN_MASK);
-    ioc_set_over(ADC_ALS_PWR_PORT, ADC_ALS_PWR_PIN, IOC_OVERRIDE_DIS);
-
-    GPIO_SOFTWARE_CONTROL(GPIO_A_BASE, ADC_ALS_OUT_PIN_MASK);
-    GPIO_SET_INPUT(GPIO_A_BASE, ADC_ALS_OUT_PIN_MASK);
-    ioc_set_over(GPIO_A_NUM, ADC_ALS_OUT_PIN, IOC_OVERRIDE_ANA);
-
-    adc_init();
-    break;
-  }
-  return 0;
-}
-/*---------------------------------------------------------------------------*/
-static int
-status(int type)
-{
-  return 1;
-}
-/*---------------------------------------------------------------------------*/
-SENSORS_SENSOR(adc_sensor, ADC_SENSOR, value, configure, status);
-
-/** @} */
