@@ -57,6 +57,7 @@ void gpio_port_a_isr(void);
 void gpio_port_b_isr(void);
 void gpio_port_c_isr(void);
 void gpio_port_d_isr(void);
+void timer_interrupt_test(void);
 void rtimer_isr(void);
 void cc2538_rf_rx_tx_isr(void);
 void cc2538_rf_err_isr(void);
@@ -156,7 +157,7 @@ void(*const vectors[])(void) =
   0,                          /* 32 Reserved */
   0,                          /* 33 Reserved */
   default_handler,            /* 34 Watchdog timer, timer 0 */
-  default_handler,            /* 35 Timer 0 subtimer A */
+  timer_interrupt_test,            /* 35 Timer 0 subtimer A */
   default_handler,            /* 36 Timer 0 subtimer B */
   default_handler,            /* 37 Timer 1 subtimer A */
   default_handler,            /* 38 Timer 1 subtimer B */
