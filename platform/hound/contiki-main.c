@@ -50,7 +50,6 @@
 #include "dev/uart.h"
 #include "dev/watchdog.h"
 #include "dev/ioc.h"
-#include "dev/button-sensor.h"
 #include "dev/serial-line.h"
 #include "dev/slip.h"
 #include "dev/cc2538-rf.h"
@@ -153,8 +152,6 @@ main(void)
   process_init();
 
   watchdog_init();
-  button_sensor_init();
-
   /*
    * Character I/O Initialisation.
    * When the UART receives a character it will call serial_line_input_byte to
@@ -207,8 +204,6 @@ main(void)
   queuebuf_init();
   process_start(&tcpip_process, NULL);
 #endif /* NETSTACK_CONF_WITH_IPV6 */
-
-  process_start(&sensors_process, NULL);
 
   energest_init();
   ENERGEST_ON(ENERGEST_TYPE_CPU);
