@@ -119,3 +119,6 @@ SECTIONS
         KEEP(*(.flashcca))
     } > FLASH_CCA
 }
+
+
+PROVIDE(_end = _ebss);
