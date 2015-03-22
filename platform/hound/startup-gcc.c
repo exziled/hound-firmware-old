@@ -340,22 +340,6 @@ reset_handler(void)
   while(1);
 }
 
-void timer_interrupt_test(void)
-{
-  static int value = 0;
-
-  if (value)
-  {
-    GPIO_SET_PIN(GPIO_C_BASE, 1 << 7);
-  } else {
-    GPIO_CLR_PIN(GPIO_C_BASE, 1 << 7);
-  }
-
-  value = !value;
-
-
-  REG(GPT_0_BASE + GPTIMER_ICR) |= GPTIMER_ICR_TBMCINT;
-}
 /*---------------------------------------------------------------------------*/
 
 /** @} */
