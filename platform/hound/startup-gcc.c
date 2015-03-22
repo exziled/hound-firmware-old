@@ -38,6 +38,7 @@
  */
 #include "contiki.h"
 #include "reg.h"
+#include "gptimer.h"
 #include "flash-cca.h"
 #include "sys-ctrl.h"
 #include "uart.h"
@@ -157,8 +158,8 @@ void(*const vectors[])(void) =
   0,                          /* 32 Reserved */
   0,                          /* 33 Reserved */
   default_handler,            /* 34 Watchdog timer, timer 0 */
-  timer_interrupt_test,            /* 35 Timer 0 subtimer A */
-  default_handler,            /* 36 Timer 0 subtimer B */
+  default_handler,            /* 35 Timer 0 subtimer A */
+  timer_interrupt_test,       /* 36 Timer 0 subtimer B */
   default_handler,            /* 37 Timer 1 subtimer A */
   default_handler,            /* 38 Timer 1 subtimer B */
   default_handler,            /* 39 Timer 2 subtimer A */
@@ -337,6 +338,23 @@ reset_handler(void)
 
   /* End here if main () returns */
   while(1);
+}
+
+void timer_interrupt_test(void)
+{
+  static int value = 0;
+
+  if (value)
+  {
+    GPIO_SET_PIN(GPIO_C_BASE, 1 << 7);
+  } else {
+    GPIO_CLR_PIN(GPIO_C_BASE, 1 << 7);
+  }
+
+  value = !value;
+
+
+  REG(GPT_0_BASE + GPTIMER_ICR) |= GPTIMER_ICR_TBMCINT;
 }
 /*---------------------------------------------------------------------------*/
 

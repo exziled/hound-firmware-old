@@ -65,6 +65,7 @@
  */
 #include "contiki.h"
 #include "cpu.h"
+#include "dev/gptimer.h"
 #include "sys/etimer.h"
 #include "sys/rtimer.h"
 #include "dev/leds.h"
@@ -130,7 +131,11 @@ PROCESS_THREAD(cc2538_demo_process, ev, data)
     if(ev == PROCESS_EVENT_TIMER) {
       leds_on(LEDS_PERIODIC);
       printf("-----------------------------------------\n"
-             "Counter = 0x%08x\n", counter);
+             "Counter = 0x%08x\nTimer = 0x%08x\n", counter, REG(GPT_0_BASE + GPTIMER_TBV));
+      printf("Interrupt Status 0x%08x\n", REG(GPT_0_BASE + GPTIMER_MIS));
+      printf("Timer - 0x%08x\n", REG(GPT_0_BASE + GPTIMER_TBV));
+      printf("Timer - 0x%08x\n", REG(GPT_0_BASE + GPTIMER_TBV));
+      printf("Timer - 0x%08x\n", REG(GPT_0_BASE + GPTIMER_TBV));
 
 
       etimer_set(&et, CLOCK_SECOND);

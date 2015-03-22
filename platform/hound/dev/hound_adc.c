@@ -47,6 +47,7 @@
 #include "dev/adc.h"
 #include "dev/udma.h"
 #include "dev/gptimer.h"
+#include "dev/nvic.h"
 
 // Platform
 #include "dev/hound_adc.h"
@@ -54,7 +55,8 @@
 
 // Standard Libraries
 #include <stdint.h>
-#include <malloc.h>
+#include <stdlib.h>
+//#include <malloc.h>
 
 
 // #define ADC_ALS_PWR_PORT_BASE    GPIO_PORT_TO_BASE(ADC_ALS_PWR_PORT)
@@ -81,17 +83,17 @@ int init_hound_data(uint8_t data_size)
 {
 	hound_raw_data.data_size = data_size;
 
-	hound_raw_data.current_socket_1 = (uint16_t *)malloc(sizeof(uint16_t) * data_size);
-	hound_raw_data.current_socket_2 = (uint16_t *)malloc(sizeof(uint16_t) * data_size);
-	hound_raw_data.voltage = (uint16_t *)malloc(sizeof(uint16_t) * data_size);
+	// hound_raw_data.current_socket_1 = (uint16_t *)malloc(sizeof(uint16_t) * data_size);
+	// hound_raw_data.current_socket_2 = (uint16_t *)malloc(sizeof(uint16_t) * data_size);
+	// hound_raw_data.voltage = (uint16_t *)malloc(sizeof(uint16_t) * data_size);
 
-	if (hound_raw_data.current_socket_1 == NULL
-		|| hound_raw_data.current_socket_2 == NULL
-		|| hound_raw_data.voltage == NULL)
-	{
-		// ERROR: Could not allocate memory
-		return -1;
-	}
+	// if (hound_raw_data.current_socket_1 == NULL
+	// 	|| hound_raw_data.current_socket_2 == NULL
+	// 	|| hound_raw_data.voltage == NULL)
+	// {
+	// 	// ERROR: Could not allocate memory
+	// 	return -1;
+	// }
 
 	return 0;
 }
@@ -109,73 +111,63 @@ void init_hound_adc(void)
 								| SOC_ADC_ADCCON2_SCH_AIN2);
 
 	// Configure DMA for ADC Operation
-	udma_set_channel_assignment(14, 0);
-	udma_set_channel_assignment(15, 0);
-	udma_set_channel_assignment(16, 0);
+	// udma_set_channel_assignment(14, 0);
+	// udma_set_channel_assignment(15, 0);
+	// udma_set_channel_assignment(16, 0);
 
-	// If extra is enabled, do this...
-	//udma_set_channel_assignment(17, 0);
+	// // If extra is enabled, do this...
+	// //udma_set_channel_assignment(17, 0);
 
-	udma_channel_mask_clr(14);		// Enable peripeheral interrupts
-	udma_set_channel_control_word(14, 	(UDMA_CHCTL_DSTINC_16 			// 12 Bit DAC (so 16 bit data size) and increment on the destination
-										| UDMA_CHCTL_SRCINC_NONE 
-										| UDMA_CHCTL_SRCSIZE_16 
-										| UDMA_CHCTL_DSTSIZE_16
-										| UDMA_CHCTL_ARBSIZE_1
-										| UDMA_CHCTL_XFERMODE_BASIC		// Do 1 transfer without interrupt
-										| udma_xfer_size(200)));		// Do 200 transfers (hopefully)
-	udma_set_channel_src(14, SOC_ADC_ADCL_ADC);
-	udma_set_channel_dst(14, hound_raw_data.voltage + hound_raw_data.data_size);
+	// udma_channel_mask_clr(14);		// Enable peripeheral interrupts
+	// udma_set_channel_control_word(14, 	(UDMA_CHCTL_DSTINC_16 			// 12 Bit DAC (so 16 bit data size) and increment on the destination
+	// 									| UDMA_CHCTL_SRCINC_NONE 
+	// 									| UDMA_CHCTL_SRCSIZE_16 
+	// 									| UDMA_CHCTL_DSTSIZE_16
+	// 									| UDMA_CHCTL_ARBSIZE_1
+	// 									| UDMA_CHCTL_XFERMODE_BASIC		// Do 1 transfer without interrupt
+	// 									| udma_xfer_size(200)));		// Do 200 transfers (hopefully)
+	// udma_set_channel_src(14, SOC_ADC_ADCL_ADC);
+	// udma_set_channel_dst(14, hound_raw_data.voltage + hound_raw_data.data_size);
 
-	udma_channel_mask_clr(15);		// Enable peripeheral interrupts
-	udma_set_channel_control_word(15, 	(UDMA_CHCTL_DSTINC_16 			// 12 Bit DAC (so 16 bit data size) and increment on the destination
-										| UDMA_CHCTL_SRCINC_NONE 
-										| UDMA_CHCTL_SRCSIZE_16 
-										| UDMA_CHCTL_DSTSIZE_16
-										| UDMA_CHCTL_ARBSIZE_1
-										| UDMA_CHCTL_XFERMODE_BASIC		// Do 1 transfer without interrupt
-										| udma_xfer_size(200)));		// Do 200 transfers (hopefully)
-	udma_set_channel_src(15, SOC_ADC_ADCL_ADC);
-	udma_set_channel_dst(15, hound_raw_data.current_socket_1 + hound_raw_data.data_size);
+	// udma_channel_mask_clr(15);		// Enable peripeheral interrupts
+	// udma_set_channel_control_word(15, 	(UDMA_CHCTL_DSTINC_16 			// 12 Bit DAC (so 16 bit data size) and increment on the destination
+	// 									| UDMA_CHCTL_SRCINC_NONE 
+	// 									| UDMA_CHCTL_SRCSIZE_16 
+	// 									| UDMA_CHCTL_DSTSIZE_16
+	// 									| UDMA_CHCTL_ARBSIZE_1
+	// 									| UDMA_CHCTL_XFERMODE_BASIC		// Do 1 transfer without interrupt
+	// 									| udma_xfer_size(200)));		// Do 200 transfers (hopefully)
+	// udma_set_channel_src(15, SOC_ADC_ADCL_ADC);
+	// udma_set_channel_dst(15, hound_raw_data.current_socket_1 + hound_raw_data.data_size);
 
-	udma_channel_mask_clr(16);		// Enable peripeheral interrupts
-	udma_set_channel_control_word(16, 	(UDMA_CHCTL_DSTINC_16 			// 12 Bit DAC (so 16 bit data size) and increment on the destination
-										| UDMA_CHCTL_SRCINC_NONE 
-										| UDMA_CHCTL_SRCSIZE_16 
-										| UDMA_CHCTL_DSTSIZE_16
-										| UDMA_CHCTL_ARBSIZE_1
-										| UDMA_CHCTL_XFERMODE_BASIC		// Do 1 transfer without interrupt
-										| udma_xfer_size(200)));		// Do 200 transfers (hopefully)
-	udma_set_channel_src(16, SOC_ADC_ADCL_ADC);
-	udma_set_channel_dst(16, hound_raw_data.current_socket_2 + hound_raw_data.data_size);
+	// udma_channel_mask_clr(16);		// Enable peripeheral interrupts
+	// udma_set_channel_control_word(16, 	(UDMA_CHCTL_DSTINC_16 			// 12 Bit DAC (so 16 bit data size) and increment on the destination
+	// 									| UDMA_CHCTL_SRCINC_NONE 
+	// 									| UDMA_CHCTL_SRCSIZE_16 
+	// 									| UDMA_CHCTL_DSTSIZE_16
+	// 									| UDMA_CHCTL_ARBSIZE_1
+	// 									| UDMA_CHCTL_XFERMODE_BASIC		// Do 1 transfer without interrupt
+	// 									| udma_xfer_size(200)));		// Do 200 transfers (hopefully)
+	// udma_set_channel_src(16, SOC_ADC_ADCL_ADC);
+	// udma_set_channel_dst(16, hound_raw_data.current_socket_2 + hound_raw_data.data_size);
 
+	printf("Timer Configured\r\n");
 
 	// Configure Timer
 	REG(GPT_0_BASE + GPTIMER_CTL) 	&= 	~(GPTIMER_CTL_TBEN);		// Disable GPT0-TimerB
-	REG(GPT_0_BASE + GPTIMER_CFG) 	= 	0x0;
+	REG(GPT_0_BASE + GPTIMER_CFG) 	= 	0x04;
 	REG(GPT_0_BASE + GPTIMER_TBMR) 	|= 	(GPTIMER_TBMR_TBMR_PERIODIC		// Periodic with Interrupt?
 										| GPTIMER_TBMR_TBMIE);
 	REG(GPT_0_BASE + GPTIMER_TBILR) = 	0xFFF;						// Load Initial Value
 	REG(GPT_0_BASE + GPTIMER_IMR) 	|= 	GPTIMER_IMR_TBMIM;			// Enable "match" interrupt
+	REG(GPT_0_BASE + GPTIMER_TBMATCHR)	= 0xF;
 	REG(GPT_0_BASE + GPTIMER_CTL)	|= 	GPTIMER_CTL_TBEN;			// Enable Timer
 
-	GPIO_SET_OUTPUT(GPIO_C_BASE, 1);
+	GPIO_SET_OUTPUT(GPIO_C_BASE, 1 << 7);
+	GPIO_SET_PIN(GPIO_C_BASE, 1 << 7);
+	GPIO_CLR_PIN(GPIO_C_BASE, 1 << 7);
 
-}
-
-
-void timer_interrupt_test(void)
-{
-	static int value = 0;
-
-	if (value)
-	{
-		GPIO_SET_PIN(GPIO_C_BASE, 1);
-	} else {
-		GPIO_CLR_PIN(GPIO_C_BASE, 1);
-	}
-
-	value = !value;
+	nvic_interrupt_enable(NVIC_INT_GPTIMER_0B);
 }
 
 

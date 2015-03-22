@@ -66,6 +66,8 @@
 #include "ieee-addr.h"
 #include "lpm.h"
 
+#include "dev/hound_adc.h"
+
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
@@ -204,6 +206,9 @@ main(void)
   queuebuf_init();
   process_start(&tcpip_process, NULL);
 #endif /* NETSTACK_CONF_WITH_IPV6 */
+
+  init_hound_data(100);
+  init_hound_adc();
 
   energest_init();
   ENERGEST_ON(ENERGEST_TYPE_CPU);
