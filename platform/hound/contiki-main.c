@@ -43,7 +43,6 @@
  */
 /*---------------------------------------------------------------------------*/
 #include "contiki.h"
-#include "dev/leds.h"
 #include "dev/sys-ctrl.h"
 #include "dev/scb.h"
 #include "dev/nvic.h"
@@ -84,24 +83,7 @@
 #define PUTS(s)
 #endif
 /*---------------------------------------------------------------------------*/
-static void
-fade(unsigned char l)
-{
-  volatile int i;
-  int k, j;
-  for(k = 0; k < 800; ++k) {
-    j = k > 400 ? 800 - k : k;
 
-    leds_on(l);
-    for(i = 0; i < j; ++i) {
-      asm("nop");
-    }
-    leds_off(l);
-    for(i = 0; i < 400 - j; ++i) {
-      asm("nop");
-    }
-  }
-}
 /*---------------------------------------------------------------------------*/
 static void
 set_rf_params(void)
@@ -148,9 +130,6 @@ main(void)
   rtimer_init();
   gpio_init();
 
-  leds_init();
-  fade(LEDS_YELLOW);
-
   process_init();
 
   watchdog_init();
@@ -178,7 +157,6 @@ main(void)
   serial_line_init();
 
   INTERRUPTS_ENABLE();
-  fade(LEDS_GREEN);
 
   PUTS(CONTIKI_VERSION_STRING);
   PUTS(BOARD_STRING);
@@ -216,7 +194,6 @@ main(void)
   autostart_start(autostart_processes);
 
   watchdog_start();
-  fade(LEDS_ORANGE);
 
   while(1) {
     uint8_t r;

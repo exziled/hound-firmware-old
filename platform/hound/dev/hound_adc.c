@@ -83,9 +83,9 @@ int init_hound_data(uint8_t data_size)
 {
 	hound_raw_data.data_size = data_size;
 
-	// hound_raw_data.current_socket_1 = (uint16_t *)malloc(sizeof(uint16_t) * data_size);
-	// hound_raw_data.current_socket_2 = (uint16_t *)malloc(sizeof(uint16_t) * data_size);
-	// hound_raw_data.voltage = (uint16_t *)malloc(sizeof(uint16_t) * data_size);
+	hound_raw_data.current_socket_1 = (uint16_t *)malloc(sizeof(uint16_t) * data_size);
+	hound_raw_data.current_socket_2 = (uint16_t *)malloc(sizeof(uint16_t) * data_size);
+	hound_raw_data.voltage = (uint16_t *)malloc(sizeof(uint16_t) * data_size);
 
 	// if (hound_raw_data.current_socket_1 == NULL
 	// 	|| hound_raw_data.current_socket_2 == NULL

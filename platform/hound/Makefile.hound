@@ -6,7 +6,7 @@ endif
 
 CONTIKI_TARGET_DIRS = . dev
 
-CONTIKI_TARGET_SOURCEFILES += contiki-main.c
+CONTIKI_TARGET_SOURCEFILES += contiki-main.c leds-arch.c
 CONTIKI_TARGET_SOURCEFILES += hound_adc.c
 
 TARGET_START_SOURCEFILES += startup-gcc.c

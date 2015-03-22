@@ -1,0 +1,5 @@
+speed 1000
+loadbin cc2538-demo.hex 200000      # 0x200000 is the start of program memory for the CC2538 series
+r
+g
+exit
