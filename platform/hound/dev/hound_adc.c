@@ -102,7 +102,7 @@ int init_hound_data(uint8_t data_size)
 void init_hound_adc(void)
 {
 	// Configure ADC to convert on triggers from Timer 1 Channel 0
-	REG(SOC_ADC_ADCCON1) |=		SOC_ADC_ADCCON1_STSEL_TIM1;
+	REG(SOC_ADC_ADCCON1) |=		SOC_ADC_ADCCON1_STSEL_ST;
 
 	// Reference AVDD
 	// 128 Decimation
@@ -111,10 +111,14 @@ void init_hound_adc(void)
 								| SOC_ADC_ADCCON2_SDIV_128
 								| SOC_ADC_ADCCON2_SCH_AIN2);
 
+	udma_channel_disable(14);
+	udma_channel_disable(15);
+	udma_channel_disable(16);
+
 	// Configure DMA for ADC Operation
-	udma_set_channel_assignment(14, 0);
-	udma_set_channel_assignment(15, 0);
-	udma_set_channel_assignment(16, 0);
+	udma_set_channel_assignment(14, 0);		// ADC 0
+	udma_set_channel_assignment(15, 0);		// ADC 1
+	udma_set_channel_assignment(16, 0);		// ADC 2
 
 	// If extra is enabled, do this...
 	//udma_set_channel_assignment(17, 0);
@@ -126,7 +130,7 @@ void init_hound_adc(void)
 										| UDMA_CHCTL_DSTSIZE_16
 										| UDMA_CHCTL_ARBSIZE_1
 										| UDMA_CHCTL_XFERMODE_BASIC		// Do 1 transfer without interrupt
-										| udma_xfer_size(200)));		// Do 200 transfers (hopefully)
+										| udma_xfer_size(1)));		// Do 200 transfers (hopefully)
 	udma_set_channel_src(14, SOC_ADC_ADCL_ADC);
 	udma_set_channel_dst(14, hound_raw_data.voltage + hound_raw_data.data_size);
 
@@ -137,7 +141,7 @@ void init_hound_adc(void)
 										| UDMA_CHCTL_DSTSIZE_16
 										| UDMA_CHCTL_ARBSIZE_1
 										| UDMA_CHCTL_XFERMODE_BASIC		// Do 1 transfer without interrupt
-										| udma_xfer_size(200)));		// Do 200 transfers (hopefully)
+										| udma_xfer_size(1)));		// Do 200 transfers (hopefully)
 	udma_set_channel_src(15, SOC_ADC_ADCL_ADC);
 	udma_set_channel_dst(15, hound_raw_data.current_socket_1 + hound_raw_data.data_size);
 
@@ -148,9 +152,13 @@ void init_hound_adc(void)
 										| UDMA_CHCTL_DSTSIZE_16
 										| UDMA_CHCTL_ARBSIZE_1
 										| UDMA_CHCTL_XFERMODE_BASIC		// Do 1 transfer without interrupt
-										| udma_xfer_size(200)));		// Do 200 transfers (hopefully)
+										| udma_xfer_size(1)));		// Do 200 transfers (hopefully)
 	udma_set_channel_src(16, SOC_ADC_ADCL_ADC);
 	udma_set_channel_dst(16, hound_raw_data.current_socket_2 + hound_raw_data.data_size);
+
+	udma_channel_enable(14);
+	udma_channel_enable(15);
+	udma_channel_enable(16);
 
 	printf("Timer Configured\r\n");
 
@@ -172,9 +180,11 @@ void init_hound_adc(void)
 }
 
 
-int hound_test(void)
+void hound_test(void)
 {
-	return hound_raw_data.voltage[10];
+	printf ("%d, %d, %d", hound_raw_data.voltage[0], hound_raw_data.current_socket_1[0], hound_raw_data.current_socket_2[0]);
+
+	return;
 }
 
 
@@ -190,6 +200,8 @@ void timer_interrupt_test(void)
   }
 
   value = !value;
+
+  REG(SOC_ADC_ADCCON1) |= (1 << 6);		// Start conversion sequence
 
 
   REG(GPT_0_BASE + GPTIMER_ICR) |= GPTIMER_ICR_TBMCINT;

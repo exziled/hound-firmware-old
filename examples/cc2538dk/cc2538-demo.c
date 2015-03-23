@@ -134,7 +134,9 @@ PROCESS_THREAD(cc2538_demo_process, ev, data)
       leds_on(LEDS_PERIODIC);
       printf("-----------------------------------------\n"
              "Counter = 0x%08x\nTimer = 0x%08x\n", counter, REG(GPT_0_BASE + GPTIMER_TBV));
-      printf("ADC Stuff: %d\n", hound_test());
+      // printf("ADC Stuff: %d\n", hound_test());
+
+      hound_test();
 
       etimer_set(&et, CLOCK_SECOND);
       rtimer_set(&rt, RTIMER_NOW() + LEDS_OFF_HYSTERISIS, 1,

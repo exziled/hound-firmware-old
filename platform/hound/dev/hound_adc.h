@@ -112,7 +112,7 @@ extern HOUND_DATA hound_data;
 
 int init_hound_data(uint8_t data_size);
 void init_hound_adc(void);
-int hound_test(void);
+void hound_test(void);
 
 #endif // __HOUND_ADC_H
 
